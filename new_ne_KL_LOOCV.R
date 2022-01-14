@@ -1,9 +1,8 @@
 ###################################################################
-setwd("~/collab - Kate/SMI-ABC")
+setwd("~/collab - Kate/delta-SMI-repository")
 
 rm(list=ls())
-set.seed(0) # all the three's for nice example - a bit too nice maybe
-#16
+set.seed(0) 
 
 yim <- function(phi,theta,x,s,n,k=2){
   return(rnorm(n,theta*x^k+phi,s))
@@ -23,13 +22,13 @@ xim <- function(n, centre, spread) {
 #priors for theta and phi are ~1 improper
 
 #observation model setup and data
-n=50; m=n/2; sy=0.25; sz=1; X.centre=1; X.spread=1#
+n=30; m=n/3; sy=0.25; sz=1; X.centre=1; X.spread=1#
 phi_T=0; theta_T=1; 
-#X.centre=2/3; X.spread=2/3 #these are nice values for illustration because the cut limit is exactly correct
+#X.centre=2/3; X.spread=2/3 #these are nice values for illustration - artificial because the cut limit is exactly correct
 
 #the number of K-values and the list of K-values we consider
-K.len=10; 
-K=seq(from=1,to=2,length.out=K.len)
+K.len=30; 
+K=seq(from=0.1,to=2.3,length.out=K.len)
 
 #the number of reps per k-val
 N.trials=100
@@ -109,14 +108,18 @@ for(trial in 1:N.trials){
   print(trial)
 }
 
-pdf(file="PMSE-regression-example.pdf")
-boxplot(t(MSE.phi),boxwex=0.15,ylim=c(0,0.7),names=as.character(round(K,1)),
+#pdf(file="PMSE-regression-example.pdf")
+# boxplot(t(MSE.phi),boxwex=0.15,ylim=c(0,0.7),names=as.character(round(K,1)),
+#         xlab="covariate X power k",ylab="posterior mean squared error (phi)")
+# boxplot(t(MSE.phi.B),boxwex=0.15,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len-0.2)
+# boxplot(t(MSE.phi.C),boxwex=0.15,add=TRUE,names=NULL,col=3,outcol=3,pch=3,axes=FALSE,at=1:K.len+0.2)
+boxplot(t(MSE.phi),boxwex=0.15,ylim=c(0,0.7),col=1,outcol=0,names=as.character(round(K,1)),
         xlab="covariate X power k",ylab="posterior mean squared error (phi)")
-boxplot(t(MSE.phi.B),boxwex=0.15,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len-0.2)
-boxplot(t(MSE.phi.C),boxwex=0.15,add=TRUE,names=NULL,col=3,outcol=3,pch=3,axes=FALSE,at=1:K.len+0.2)
-legend("topleft", legend = c("Bayes","delta-SMI","Cut") , 
-       col = c(2,1,3) , bty = "n", pch=c(2,1,3))
-dev.off()
+boxplot(t(MSE.phi.B),boxwex=0.15,add=TRUE,names=NULL,col=2,outcol=0,pch=2,axes=FALSE,at=1:K.len-0.2)
+boxplot(t(MSE.phi.C),boxwex=0.15,add=TRUE,names=NULL,col=3,outcol=0,pch=3,axes=FALSE,at=1:K.len+0.2)
+legend("bottomright", legend = c("Bayes","delta-SMI","Cut") , 
+       col = c(2,1,3) , bty = "n", lwd=c(3,3,3))
+#dev.off()
 
 boxplot(t(MSE.theta),boxwex=0.15,ylim=c(0,1),names=as.character(round(K,1)),
         xlab="covariate power k",ylab="posterior mean squared error (theta)")
@@ -130,7 +133,4 @@ boxplot(t(delta.opt.loocv),boxwex=0.2,pch=1,names=as.character(round(K,1)),main=
 boxplot(t(delta.opt.exact),boxwex=0.2,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len+0.3)
 legend("topleft", legend = c("LOOCV","Exact") , 
        col = c(1,2) , bty = "n", pch=c(1,2))
-#plot(delta.opt.exact,delta.opt.loocv,xlim=c(0,10))
-
-
-
+#dev.off()

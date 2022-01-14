@@ -2,8 +2,8 @@ setwd("~/collab - Kate/SMI-ABC")
 #pdf(file="simple-normal-example.pdf",paper="a4")
 
 rm(list=ls())
-set.seed(6) # all the three's for nice example - a bit too nice maybe
-#16
+set.seed(6) # tried 1-6 wanted good separation of the cut and Bayes
+
 
 yim <- function(phi,theta,s,n){
   return(rnorm(n,theta+phi,s))
