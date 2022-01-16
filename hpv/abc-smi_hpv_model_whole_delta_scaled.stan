@@ -25,8 +25,9 @@ transformed parameters {
 }
 
 model {
-
   // The likelihood
+  
+  
   for (i in 1:n_obs) {
     int nbrLwr = ncases[i] - delta[i] - 1;
     int nbrUpr = ncases[i] + delta[i];
@@ -42,7 +43,6 @@ model {
       real logCdfDiff = log(exp(logUprCDF - logLwrCDF) - 1) + logLwrCDF;
       target += logCdfDiff/( delta[i]*2 + 1 );
     }
-    
     
     target += binomial_lpmf( nhpv[i] | Npart[i], phi[i] );
     
