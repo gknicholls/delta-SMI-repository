@@ -8,8 +8,7 @@ data {
   int<lower=0> Npart[n_obs];
   int<lower=0> ncases[n_obs];
   real<lower=0> Npop[n_obs];
-  
-  int<lower=0> delta;
+  int<lower=0> delta[n_obs];
 }
 
 parameters {
@@ -26,21 +25,24 @@ transformed parameters {
 }
 
 model {
+
   // The likelihood
   for (i in 1:n_obs) {
-    int nbrLwr = ncases[i] - delta - 1;
-    int nbrUpr = ncases[i] + delta;
+    int nbrLwr = ncases[i] - delta[i] - 1;
+    int nbrUpr = ncases[i] + delta[i];
     real logUprCDF;
+    
     
     logUprCDF = poisson_lcdf( nbrUpr | mu[i] );
     
     if(nbrLwr < 1){
-      target += logUprCDF/( delta*2 + 1 );
+      target += logUprCDF/( delta[i]*2 + 1 );
     }else{
       real logLwrCDF = poisson_lcdf( nbrLwr | mu[i] );
       real logCdfDiff = log(exp(logUprCDF - logLwrCDF) - 1) + logLwrCDF;
-      target += logCdfDiff/( delta*2 + 1 );
+      target += logCdfDiff/( delta[i]*2 + 1 );
     }
+    
     
     target += binomial_lpmf( nhpv[i] | Npart[i], phi[i] );
     
