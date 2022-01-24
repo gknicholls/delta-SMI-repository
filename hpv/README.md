@@ -6,6 +6,7 @@ Rscript hpv_abc_smi_delta_gen.R [path to inputFile]
 
 The template for the input file of hpv_abc_smi_delta_gen.R is abc-smi_hpv_delta_gen_input_template.txt.
 
+\newline
 
 **delta-SMI scaled by square root of y**
 
