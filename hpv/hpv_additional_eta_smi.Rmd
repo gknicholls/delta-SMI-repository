@@ -1,0 +1,418 @@
+---
+title: "Additional $\eta$-SMI analysis"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/eta-smi/aistats2020smi-master/data/HPV.rda")
+library(loo)
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.0025.rda")
+hpv_eta_smi_0.0025 = hpv_mcmc_smi
+
+hpv_eta_smi_0.0025_loglikMat = apply(data.matrix(hpv_eta_smi_0.0025), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.0025_loglikMat = t(hpv_eta_smi_0.0025_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.0025_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.0025_ll_pois = hpv_eta_smi_0.0025_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0025_waic_pois = waic(hpv_eta_smi_0.0025_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.0025_ll_binom = hpv_eta_smi_0.0025_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0025_waic_binom = waic(hpv_eta_smi_0.0025_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.0025_ll_pois_binom = hpv_eta_smi_0.0025_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.0025_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.0025_waic_pois_binom = waic(hpv_eta_smi_0.0025_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.0050.rda")
+hpv_eta_smi_0.005 = hpv_mcmc_smi
+
+hpv_eta_smi_0.005_loglikMat = apply(data.matrix(hpv_eta_smi_0.005), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.005_loglikMat = t(hpv_eta_smi_0.005_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.005_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.005_ll_pois = hpv_eta_smi_0.005_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.005_waic_pois = waic(hpv_eta_smi_0.005_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.005_ll_binom = hpv_eta_smi_0.005_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.005_waic_binom = waic(hpv_eta_smi_0.005_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.005_ll_pois_binom = hpv_eta_smi_0.005_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.005_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.005_waic_pois_binom = waic(hpv_eta_smi_0.005_ll_pois_binom)$estimates[,1]
+
+
+```
+
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.0075.rda")
+hpv_eta_smi_0.0075 = hpv_mcmc_smi
+
+hpv_eta_smi_0.0075_loglikMat = apply(data.matrix(hpv_eta_smi_0.0075), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.0075_loglikMat = t(hpv_eta_smi_0.0075_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.0075_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.0075_ll_pois = hpv_eta_smi_0.0075_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0075_waic_pois = waic(hpv_eta_smi_0.0075_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.0075_ll_binom = hpv_eta_smi_0.0075_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0075_waic_binom = waic(hpv_eta_smi_0.0075_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.0075_ll_pois_binom = hpv_eta_smi_0.0075_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.0075_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.0075_waic_pois_binom = waic(hpv_eta_smi_0.0075_ll_pois_binom)$estimates[,1]
+
+
+```
+
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.0125.rda")
+hpv_eta_smi_0.0125 = hpv_mcmc_smi
+
+hpv_eta_smi_0.0125_loglikMat = apply(data.matrix(hpv_eta_smi_0.0125), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.0125_loglikMat = t(hpv_eta_smi_0.0125_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.0125_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.0125_ll_pois = hpv_eta_smi_0.0125_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0125_waic_pois = waic(hpv_eta_smi_0.0125_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.0125_ll_binom = hpv_eta_smi_0.0125_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0125_waic_binom = waic(hpv_eta_smi_0.0125_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.0125_ll_pois_binom = hpv_eta_smi_0.0125_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.0125_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.0125_waic_pois_binom = waic(hpv_eta_smi_0.0125_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.015.rda")
+hpv_eta_smi_0.015 = hpv_mcmc_smi
+
+hpv_eta_smi_0.015_loglikMat = apply(data.matrix(hpv_eta_smi_0.015), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.015_loglikMat = t(hpv_eta_smi_0.015_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.015_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.015_ll_pois = hpv_eta_smi_0.015_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.015_waic_pois = waic(hpv_eta_smi_0.015_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.015_ll_binom = hpv_eta_smi_0.015_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.015_waic_binom = waic(hpv_eta_smi_0.015_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.015_ll_pois_binom = hpv_eta_smi_0.015_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.015_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.015_waic_pois_binom = waic(hpv_eta_smi_0.015_ll_pois_binom)$estimates[,1]
+
+
+```
+
+
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.0175.rda")
+hpv_eta_smi_0.0175 = hpv_mcmc_smi
+
+hpv_eta_smi_0.0175_loglikMat = apply(data.matrix(hpv_eta_smi_0.0175), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.0175_loglikMat = t(hpv_eta_smi_0.0175_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.0175_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.0175_ll_pois = hpv_eta_smi_0.0175_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0175_waic_pois = waic(hpv_eta_smi_0.0175_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.0175_ll_binom = hpv_eta_smi_0.0175_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.0175_waic_binom = waic(hpv_eta_smi_0.0175_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.0175_ll_pois_binom = hpv_eta_smi_0.0175_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.0075_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.0175_waic_pois_binom = waic(hpv_eta_smi_0.0175_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.020.rda")
+hpv_eta_smi_0.02 = hpv_mcmc_smi
+
+hpv_eta_smi_0.02_loglikMat = apply(data.matrix(hpv_eta_smi_0.02), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.02_loglikMat = t(hpv_eta_smi_0.02_loglikMat)
+```
+
+
+
+```{r hpv_eta_smi_0.02_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.02_ll_pois = hpv_eta_smi_0.02_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.02_waic_pois = waic(hpv_eta_smi_0.02_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.02_ll_binom = hpv_eta_smi_0.02_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.02_waic_binom = waic(hpv_eta_smi_0.02_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.02_ll_pois_binom = hpv_eta_smi_0.02_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.02_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.02_waic_pois_binom = waic(hpv_eta_smi_0.02_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.030.rda")
+hpv_eta_smi_0.03 = hpv_mcmc_smi
+
+hpv_eta_smi_0.03_loglikMat = apply(data.matrix(hpv_eta_smi_0.03), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.03_loglikMat = t(hpv_eta_smi_0.03_loglikMat)
+```
+
+```{r hpv_eta_smi_0.03_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.03_ll_pois = hpv_eta_smi_0.03_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.03_waic_pois = waic(hpv_eta_smi_0.03_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.03_ll_binom = hpv_eta_smi_0.03_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.03_waic_binom = waic(hpv_eta_smi_0.03_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.03_ll_pois_binom = hpv_eta_smi_0.03_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.03_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.03_waic_pois_binom = waic(hpv_eta_smi_0.03_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_0.040.rda")
+hpv_eta_smi_0.04 = hpv_mcmc_smi
+
+hpv_eta_smi_0.04_loglikMat = apply(data.matrix(hpv_eta_smi_0.04), 1,
+                  function(paramVec = NULL, data = NULL, thetaNames = NULL, phiNames = NULL){
+                    hpv_loglik(data = data,
+                               theta = paramVec[thetaNames],
+                               phi = paramVec[phiNames])
+                  },
+                  data = HPV,
+                  thetaNames = paste("theta", c(1,2), sep =""),
+                  phiNames = paste("phi", c(1:13), sep = "_"))
+hpv_eta_smi_0.04_loglikMat = t(hpv_eta_smi_0.04_loglikMat)
+```
+
+```{r hpv_eta_smi_0.04_elpd}
+# Calculate the ELPD of Poisson module
+hpv_eta_smi_0.04_ll_pois = hpv_eta_smi_0.04_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.04_waic_pois = waic(hpv_eta_smi_0.04_ll_pois)$estimates[,1]
+
+
+# Calculate the ELPD of binomial module
+hpv_eta_smi_0.04_ll_binom = hpv_eta_smi_0.04_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_eta_smi_0.04_waic_binom = waic(hpv_eta_smi_0.04_ll_binom)$estimates[,1]
+
+
+hpv_eta_smi_0.04_ll_pois_binom = hpv_eta_smi_0.04_loglikMat[, 1:nrow(HPV)] + 
+  hpv_eta_smi_0.04_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_eta_smi_0.04_waic_pois_binom = waic(hpv_eta_smi_0.04_ll_pois_binom)$estimates[,1]
+
+
+```
+
+```{r}
+
+load("/Users/chwu/Downloads/aistats2020smi_mcmc_results/hpv_smi_model_eval.rda")
+hpv_eta_smi_pois_waic.df = 
+  hpv_smi_model_eval[hpv_smi_model_eval$module=="poisson" & 
+                     hpv_smi_model_eval$score_id == "elpd_waic", ]
+hpv_eta_smi_binom_waic.df = 
+  hpv_smi_model_eval[hpv_smi_model_eval$module=="binomial" & 
+                       hpv_smi_model_eval$score_id == "elpd_waic", ]
+
+hpv_eta_smi_pois_waic_extra.df = 
+  data.frame(score_id = rep("elpd_waic", 9),
+           module = rep("poisson", 9),
+  score = c(hpv_eta_smi_0.0025_waic_pois["elpd_waic"],
+            hpv_eta_smi_0.005_waic_pois["elpd_waic"],
+            hpv_eta_smi_0.0075_waic_pois["elpd_waic"],
+            hpv_eta_smi_0.0125_waic_pois["elpd_waic"],
+  hpv_eta_smi_0.015_waic_pois["elpd_waic"],
+  hpv_eta_smi_0.0175_waic_pois["elpd_waic"],
+  hpv_eta_smi_0.02_waic_pois["elpd_waic"],
+  hpv_eta_smi_0.03_waic_pois["elpd_waic"],
+  hpv_eta_smi_0.04_waic_pois["elpd_waic"]),
+  eta_pois = c(0.0025, 0.005, 0.0075, 0.0125, 0.015, 0.0175, 0.02, 0.03, 0.04))
+
+hpv_eta_smi_pois_waic_all.df = 
+  rbind(hpv_eta_smi_pois_waic_extra.df, hpv_eta_smi_pois_waic.df)
+
+hpv_eta_smi_pois_waic_all.df = 
+  hpv_eta_smi_pois_waic_all.df[order(hpv_eta_smi_pois_waic_all.df$eta_pois),]
+rownames(hpv_eta_smi_pois_waic_all.df) = NULL
+
+
+names(hpv_eta_smi_pois_waic_all.df)[names(hpv_eta_smi_pois_waic_all.df)=="score"] = "elpd_waic"
+```
+
+
+```{r}
+
+
+hpv_eta_smi_binom_waic_extra.df = 
+  data.frame(score_id = rep("elpd_waic", 9),
+           module = rep("binomial", 9),
+  score = c(hpv_eta_smi_0.0025_waic_binom["elpd_waic"],
+            hpv_eta_smi_0.005_waic_binom["elpd_waic"],
+            hpv_eta_smi_0.0075_waic_binom["elpd_waic"],
+            hpv_eta_smi_0.0125_waic_binom["elpd_waic"],
+  hpv_eta_smi_0.015_waic_binom["elpd_waic"],
+  hpv_eta_smi_0.0175_waic_binom["elpd_waic"],
+  hpv_eta_smi_0.02_waic_binom["elpd_waic"],
+  hpv_eta_smi_0.03_waic_binom["elpd_waic"],
+  hpv_eta_smi_0.04_waic_binom["elpd_waic"]),
+  eta_pois = c(0.0025, 0.005, 0.0075, 0.0125, 0.015, 0.0175, 0.02, 0.03, 0.04))
+
+
+hpv_eta_smi_binom_waic_all.df = 
+  rbind(hpv_eta_smi_binom_waic_extra.df, hpv_eta_smi_binom_waic.df)
+
+hpv_eta_smi_binom_waic_all.df = 
+  hpv_eta_smi_binom_waic_all.df[order(hpv_eta_smi_binom_waic_all.df$eta_pois),]
+rownames(hpv_eta_smi_binom_waic_all.df) = NULL
+
+names(hpv_eta_smi_binom_waic_all.df)[names(hpv_eta_smi_binom_waic_all.df)=="score"] = "elpd_waic"
+
+```
