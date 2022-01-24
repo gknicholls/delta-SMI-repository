@@ -4,7 +4,7 @@
 #(2022)
 #
 ###################################################################
-setwd("~/collab - Kate/SMI-ABC")
+setwd("~/collab - Kate/delta-SMI-repository")
 #pdf(file="simple-normal-example.pdf",paper="a4")
 
 rm(list=ls())
