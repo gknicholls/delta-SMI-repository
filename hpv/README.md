@@ -41,3 +41,5 @@ This file also contain R commands for generating the files required for making t
 The R commands for figure 5 in the manuscript can be found in hpv_compare_theta_distr.R.
 
 The R commands for figure 6 in the manuscript can be found in hpv_waic_eta_vs_delta_plot.R
+
+Note: input files for generating the figures are already available in the hpv Github folder. See comments in hpv_compare_theta_distr.R and hpv_waic_eta_vs_delta_plot.R for details.
