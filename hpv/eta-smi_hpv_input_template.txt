@@ -1,0 +1,11 @@
+param	value
+n_iter	[Number of iteration in the main chain in stage 1 of delta-SMI, e.g., 10000]
+n_warmup	[Number of steps as burn-in for sampling() in stan, e.g., 1000]
+n_chains_mcmc	[Length of main chain in stage 1 of delta-SMI, e.g., 4]
+n_iter_sub	[Length of the subchains in stage 2 of delta-SMI, e.g., 200]
+n_cores	1 
+eta_pois	[eta value of eta-SMI used on the Poisson module in the HPV sample, eta should be a value between 0 and 1 (inclusive), e.g., 0.5]
+out_file_rda	[path to the output file, e.g., "hpv_eta-smi_0.5.RData"]
+hpv_data_path	[path to the HPV data file, HPV.csv]
+hpv_model_poisson_stan_path	[path to the hpv_model_poisson.stan file]
+hpv_model_whole_stan_path	[path to the hpv_model_whole.stan file]
