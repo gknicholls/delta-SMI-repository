@@ -1,4 +1,4 @@
-<delta-SMI>
+**delta-SMI**
 
 To run a delta-SMI analysis on the HPV dataset, the R command is
 
