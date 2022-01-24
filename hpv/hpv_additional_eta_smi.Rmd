@@ -5,9 +5,12 @@ output:
   html_notebook: default
 ---
 
-```{r}
-load("/Users/chwu/Documents/research/abc-smi/eta-smi/aistats2020smi-master/data/HPV.rda")
+```{r load_lib}
 library(loo)
+```
+
+```{r load_HPV data}
+HPV = read.csv(file = file.choose(), header = T)
 ```
 
 ```{r}

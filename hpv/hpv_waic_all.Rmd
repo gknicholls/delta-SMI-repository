@@ -1,0 +1,441 @@
+---
+title: "ABC-SMI: Calculate the ELPDs of the HPV example"
+output: html_notebook
+---
+
+
+```{r load_lib}
+library(loo)
+library(ggplot2)
+```
+
+```{r load_functions}
+
+hpv_loglik = function( data = NULL,
+                        theta = NULL, 
+                        phi = NULL) {
+  
+  n_obs = nrow(data)
+  
+  check_dim = (length(phi) == n_obs) && (length(theta) == 2)
+  if(!check_dim){ 
+    stop("There is a problem with the dimensions of theta and/or phi")
+  }
+  
+  mu = data[,"Npop"] / 1000 * exp( theta[1] + theta[2] * phi  )
+  
+  loglik = matrix(0, nrow = n_obs, ncol = 2)
+  
+  loglik[,1] = dpois( x=data[,"ncases"], lambda=mu , log=TRUE )
+  loglik[,2] = dbinom( x=data[,"nhpv"], size=data[,"Npart"], prob=phi , log=TRUE )
+  colnames(loglik) = c("pois","binom")
+  
+  return( loglik )
+}
+
+
+hpv_loglik_wrap = function(paramVec = NULL,
+                           data = NULL, 
+                           thetaNames = NULL,
+                           phiNames = NULL){
+  loglikVal = hpv_loglik(data = data,
+                         theta = paramVec[thetaNames],
+                         phi = paramVec[phiNames])
+}
+
+
+mapDeltaToEta = function(spectrum = NULL, mappedVal = NULL, targetVal = NULL){
+  lessIndexes = which(spectrum < targetVal)
+  minIndex = ifelse(length(lessIndexes) > 0, 
+                    lessIndexes[which.max(spectrum[lessIndexes])], 
+                    which.min(spectrum))
+  greaterIndexes = which(spectrum > targetVal)
+  maxIndex = ifelse(length(greaterIndexes) > 0, 
+                    greaterIndexes[which.min(spectrum[greaterIndexes])], 
+                    which.max(spectrum))
+  
+  mappedTarget = mappedVal[minIndex]
+  if(maxIndex != minIndex){
+    gradient = (mappedVal[maxIndex] - mappedVal[minIndex])/
+      (spectrum[maxIndex] - spectrum[minIndex])
+    mappedTarget = mappedVal[minIndex] + gradient*(targetVal - spectrum[minIndex])
+  }
+  
+  return(mappedTarget)
+}
+
+
+
+hpv_elpd = function(ll_pois = NULL, ll_binom = NULL){
+  # By wAIC
+  waic_pois = waic(ll_pois)$estimates[, 1]
+  relESS_pois = relative_eff(exp(ll_pois), chain_id = rep(1,nrow(ll_pois))) 
+  # By LOO
+  loo_pois = loo( ll_pois, r_eff = relESS_pois)$estimates[, 1] 
+  
+  # By wAIC
+  waic_binom = waic(ll_binom)$estimates[, 1]
+  # By LOO
+  relESS_binom = relative_eff(exp(ll_binom), chain_id = rep(1,nrow(ll_binom))) 
+  loo_binom = loo( ll_binom, r_eff = relESS_binom)$estimates[, 1]  
+  
+  elpdList = list(poisson = rbind(waic = waic_pois, loo = loo_pois),
+                  binomial = rbind(waic = waic_binom, loo = loo_binom))
+  return(elpdList)
+}
+
+```
+
+```{r load_HPV_data}
+# Load HPV.csv
+HPV = read.csv(file = file.choose(), header = T)
+```
+
+# Full Bayes Model
+
+```{r bayes_load_param_distr}
+## load hpv_bayes_param object from hpv_bayes.RData
+load(file = file.choose())
+```
+
+
+```{r bayes_calc_loglik}
+# Obtain the posterior distributions of theta and phi from the full Bayes analysis.
+hpv_bayes_param.df = data.frame(hpv_bayes_param$phi, 
+                                theta1 = hpv_bayes_param$theta1, 
+                                theta2 = hpv_bayes_param$theta2)
+names(hpv_bayes_param.df)[1:ncol(hpv_bayes_param$phi)] = 
+  paste("phi", c(1:ncol(hpv_bayes_param$phi)), sep="")
+thetaLabels = c("theta1", "theta2")
+phiLabels = paste("phi", c(1:13), sep="")
+
+# Obtain the log-likelihood for each posterior sample in the full Bayes analysis.
+hpv_bayes_loglikMat = apply(data.matrix(hpv_bayes_param.df), 1,
+                            function(paramVec = NULL, 
+                                     data = NULL, 
+                                     thetaNames = NULL, 
+                                     phiNames = NULL){
+                              
+                              hpv_loglik(data = data,
+                                         theta = paramVec[thetaNames],
+                                         phi = paramVec[phiNames])
+                              },
+                            data = HPV,
+                            thetaNames = thetaLabels,
+                            phiNames = phiLabels)
+hpv_bayes_loglikMat = t(hpv_bayes_loglikMat)
+```
+
+```{r bayes_calc_elpd}
+# Calculate the ELPD of Poisson module for the full Bayes analysis.
+## Extract the required log-likelihood
+hpv_bayes_ll_pois = hpv_bayes_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_bayes_waic_pois = waic(hpv_bayes_ll_pois)$estimates[,1]
+## By LOO
+hpv_bayes_relESS_pois = relative_eff(exp(hpv_bayes_ll_pois), 
+                                     chain_id = rep(1, nrow(hpv_bayes_ll_pois))) 
+hpv_bayes_loo_pois = loo( hpv_bayes_ll_pois, r_eff = hpv_bayes_relESS_pois)$estimates[,1] 
+
+
+# Calculate the ELPD of binomial module for the full Bayes analysis.
+## Extract the required log-likelihood
+hpv_bayes_ll_binom = hpv_bayes_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_bayes_waic_binom = waic(hpv_bayes_ll_binom)$estimates[,1]
+## By LOO
+hpv_bayes_relESS_binom = relative_eff(exp(hpv_bayes_ll_binom), 
+                                     chain_id = rep(1, nrow(hpv_bayes_ll_binom))) 
+hpv_bayes_loo_pois = loo( hpv_bayes_ll_binom, r_eff = hpv_bayes_relESS_binom)$estimates[,1] 
+
+# Calculate the joint ELPD of Poisson and binomial modules 
+# for the full Bayes analysis.
+hpv_bayes_ll_pois_binom = hpv_bayes_loglikMat[, 1:nrow(HPV)] + 
+  hpv_bayes_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_bayes_waic_pois_binom = waic(hpv_bayes_ll_pois_binom)$estimates[,1]
+
+# Save elpd results from the Bayesian analysis 
+# to hpv_bayes_elpd.RData in the working directory.
+save(hpv_bayes_waic_pois,
+     hpv_bayes_loo_pois,
+     hpv_bayes_waic_binom,
+     hpv_bayes_loo_pois,
+     file = "hpv_bayes_elpd.RData")
+
+```
+
+# Cut Model
+
+```{r cut_load_param_distr}
+load("/Users/chwu/Documents/research/abc-smi/hpv/hpv_cut.RData")
+```
+
+
+```{r cut_calc_loglik}
+colnames(hpv_cut_param) = gsub(colnames(hpv_cut_param), pattern = "_", replace = "")
+
+# Obtain the log-likelihood for each posterior sample in the cut analysis.
+hpv_cut_loglikMat = apply(hpv_cut_param, 1,
+                          function(paramVec = NULL, 
+                                   data = NULL,
+                                   thetaNames = NULL,
+                                   phiNames = NULL){
+                              hpv_loglik(data = data,
+                                         theta = paramVec[thetaNames],
+                                         phi = paramVec[phiNames])
+                          },
+                          data = HPV,
+                          thetaNames = thetaLabels,
+                          phiNames = phiLabels)
+hpv_cut_loglikMat = t(hpv_cut_loglikMat)
+```
+
+
+```{r cut_calc_elpd}
+# Calculate the ELPD of Poisson module for the cut analysis.
+hpv_cut_ll_pois = hpv_cut_loglikMat[, 1:nrow(HPV)]
+## By wAIC
+hpv_cut_waic_pois = waic(hpv_cut_ll_pois)$estimates[,1]
+## By LOO
+hpv_cut_relESS_pois = relative_eff(exp(hpv_cut_ll_pois), 
+                                     chain_id = rep(1, nrow(hpv_cut_ll_pois))) 
+hpv_cut_loo_pois = loo( hpv_cut_ll_pois, r_eff = hpv_cut_relESS_pois)$estimates[,1] 
+
+
+# Calculate the ELPD of binomial module for the cut analysis.
+hpv_cut_ll_binom = hpv_cut_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+## By wAIC
+hpv_cut_waic_binom = waic(hpv_cut_ll_binom)$estimates[,1]
+## By LOO
+hpv_cut_relESS_binom = relative_eff(exp(hpv_cut_ll_binom), 
+                                      chain_id = rep(1, nrow(hpv_cut_ll_binom))) 
+hpv_cut_loo_pois = loo( hpv_cut_ll_binom, r_eff = hpv_cut_relESS_binom)$estimates[,1] 
+
+# Calculate the joint ELPD of Poisson and 
+# binomial modulesfor the cut analysis.
+hpv_cut_ll_pois_binom = hpv_cut_loglikMat[, 1:nrow(HPV)] + 
+  hpv_cut_loglikMat[, nrow(HPV) + 1:nrow(HPV)]
+hpv_cut_waic_pois_binom = waic(hpv_cut_ll_pois_binom)$estimates[,1]
+
+
+
+# Save elpd results from the Bayesian analysis 
+# to hpv_bayes_elpd.RData in the working directory.
+save(hpv_cut_waic_pois,
+     hpv_cut_loo_pois,
+     hpv_cut_waic_binom,
+     hpv_cut_loo_pois,
+     file = "hpv_cut_elpd.RData")
+```
+
+# $\delta$-SMI
+
+```{r abc_smi_load}
+# Loading all the output files from delta-SMI analyses.
+# (Assuming there are all in the working directory).
+outputFiles = paste("hpv_abc-smi_delta_", 2^c(0:10), ".RData", sep="")
+
+# Store all the posterior distributions of theta and phi into a list.
+hpv_abc_smi_list = list()
+for(i in 1:length(outputFiles)){
+  load(outputFiles[i])
+  hpv_abc_smi_list[[i]] = hpv_abc_smi_output.df
+}
+```
+
+
+```{r abc_smi_calc_loglik}
+# Obtain the log-likelihood for each posterior sample 
+# from each of the delta-SMI analyses.
+hpv_abc_smi_loglik_list = list()
+for(i in 1:length(hpv_abc_smi_list)){
+  
+  hpv_abc_smi_output.mat = data.matrix(hpv_abc_smi_list[[i]])
+  loglikMat = apply(hpv_abc_smi_output.mat, 1,
+                    hpv_loglik_wrap,
+                    data = HPV,
+                    phiNames = phiLabels,
+                    thetaNames = thetaLabels)
+  hpv_abc_smi_loglik_list[[i]] = t(loglikMat)
+
+}
+
+names(hpv_abc_smi_loglik_list) = 
+  paste("hpv_abc-smi_delta", 2^c(0:10), sep = "_")
+```
+
+
+```{r abc_smi_calc_elpd}
+# Calculate the ELPDs for each of the delta-SMI analyses.
+hpv_abc_smi_waic_pois = matrix(nrow = length(hpv_abc_smi_list), ncol = 3)
+hpv_abc_smi_loo_pois = matrix(nrow = length(hpv_abc_smi_list), ncol = 3)
+hpv_abc_smi_waic_binom = matrix(nrow = length(hpv_abc_smi_list), ncol = 3)
+hpv_abc_smi_loo_binom = matrix(nrow = length(hpv_abc_smi_list), ncol = 3)
+colnames(hpv_abc_smi_waic_pois) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_abc_smi_loo_pois) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_abc_smi_waic_binom) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_abc_smi_loo_binom) = c("elpd_waic", "p_waic", "waic")
+
+for(i in 1:length(hpv_abc_smi_list)){
+  
+  # Calculate the ELPD of Poisson module for each of the delta-SMI analyses.
+  hpv_abc_smi_ll_pois = hpv_abc_smi_loglik_list[[i]][, 1:nrow(HPV)]
+  # By wAIC
+  hpv_abc_smi_waic_pois[i,] = waic(hpv_abc_smi_ll_pois)$estimates[, 1]
+  hpv_abc_smi_relESS_pois = relative_eff(exp(hpv_abc_smi_ll_pois), 
+                                         chain_id = rep(1,nrow(hpv_abc_smi_ll_pois))) 
+  # By LOO
+  hpv_abc_smi_loo_pois[i,] = loo( hpv_abc_smi_ll_pois, 
+                                  r_eff = hpv_abc_smi_relESS_pois)$estimates[, 1] 
+  
+  
+  # Calculate the ELPD of binomial module for each of the delta-SMI analyses.
+  hpv_abc_smi_ll_binom = hpv_abc_smi_loglik_list[[i]][, nrow(HPV) + 1:nrow(HPV)]
+  # By wAIC
+  hpv_abc_smi_waic_binom[i,] = waic(hpv_abc_smi_ll_binom)$estimates[, 1]
+  # By LOO
+  hpv_abc_smi_relESS_binom = relative_eff(exp(hpv_abc_smi_ll_binom), 
+                                          chain_id = rep(1, nrow(hpv_abc_smi_ll_binom))) 
+  hpv_abc_smi_loo_binom[i,] = loo( hpv_abc_smi_ll_binom, 
+                                   r_eff = hpv_abc_smi_relESS_binom)$estimates[, 1] 
+}
+
+# Save elpd results from delta-smi to hpv_abc_smi_elpd.RData
+# in the working directory.
+save(hpv_abc_smi_waic_pois,
+     hpv_abc_smi_loo_pois,
+     hpv_abc_smi_waic_binom,
+     hpv_abc_smi_loo_binom,
+     file = "hpv_abc_smi_elpd.RData")
+```
+
+# $\eta$-SMI
+
+```{r eta_smi_load}
+add_eta_pois = c("0.0025", "0.0050", "0.0075", "0.0125", "0.015", "0.0175", "0.020", "0.030", "0.040")
+outputFiles = paste("/Users/chwu/Documents/research/abc-smi/hpv/hpv_eta_smi_", add_eta_pois, ".rda", sep="")
+
+hpv_eta_smi_list = list()
+for(i in 1:length(outputFiles)){
+  load(outputFiles[i])
+  hpv_eta_smi_list[[i]] = hpv_mcmc_smi
+}
+```
+
+
+
+```{r eta_smi_calc_loglik}
+# Obtain the log-likelihood for each posterior sample 
+# from each of the delta-SMI analyses.
+hpv_eta_smi_loglik_list = list()
+for(i in 1:length(hpv_eta_smi_list)){
+  
+  hpv_eta_smi_output.mat = data.matrix(hpv_eta_smi_list[[i]])
+  loglikMat = apply(hpv_eta_smi_output.mat, 1,
+                    hpv_loglik_wrap,
+                    data = HPV,
+                    phiNames = paste("phi", c(1:13), sep="_"),
+                    thetaNames = c("theta1", "theta2"))
+  hpv_eta_smi_loglik_list[[i]] = t(loglikMat)
+
+}
+
+names(hpv_eta_smi_loglik_list) = 
+  paste("hpv_eta-smi_", add_eta_pois, sep = "_")
+```
+
+
+```{r eta_smi_calc_elpd_pois}
+# Calculate the ELPDs for each of the delta-SMI analyses.
+hpv_eta_smi_waic_pois = matrix(nrow = length(hpv_eta_smi_list), ncol = 3)
+hpv_eta_smi_loo_pois = matrix(nrow = length(hpv_eta_smi_list), ncol = 3)
+hpv_eta_smi_waic_binom = matrix(nrow = length(hpv_eta_smi_list), ncol = 3)
+hpv_eta_smi_loo_binom = matrix(nrow = length(hpv_eta_smi_list), ncol = 3)
+colnames(hpv_eta_smi_waic_pois) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_eta_smi_loo_pois) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_eta_smi_waic_binom) = c("elpd_waic", "p_waic", "waic")
+colnames(hpv_eta_smi_loo_binom) = c("elpd_waic", "p_waic", "waic")
+
+for(i in 1:length(hpv_eta_smi_list)){
+  
+  # Calculate the ELPD of Poisson module for each of the eta-SMI analyses.
+  hpv_eta_smi_ll_pois = hpv_eta_smi_loglik_list[[i]][, 1:nrow(HPV)]
+  # By wAIC
+  hpv_eta_smi_waic_pois[i,] = waic(hpv_eta_smi_ll_pois)$estimates[, 1]
+  relESS_pois = relative_eff(exp(hpv_eta_smi_ll_pois), chain_id = rep(1,nrow(hpv_eta_smi_ll_pois))) 
+  # By LOO
+  hpv_eta_smi_loo_pois[i,] = loo( hpv_eta_smi_ll_pois, r_eff = relESS_pois)$estimates[, 1] 
+  
+  
+  # Calculate the ELPD of binomial module for each of the delta-SMI analyses.
+  hpv_eta_smi_ll_binom = hpv_eta_smi_loglik_list[[i]][, nrow(HPV) + 1:nrow(HPV)]
+  # By wAIC
+  hpv_eta_smi_waic_binom[i,] = waic(hpv_eta_smi_ll_binom)$estimates[, 1]
+  # By LOO
+  relESS_binom = relative_eff(exp(hpv_eta_smi_ll_binom), chain_id = rep(1,nrow(hpv_eta_smi_ll_binom))) 
+  hpv_eta_smi_loo_binom[i,] = loo( hpv_eta_smi_ll_binom, r_eff = relESS_binom)$estimates[, 1] 
+}
+
+```
+
+```{r eta_smi_elpd_load}
+# Load hpv_smi_model_eval from hpv_smi_model_eval.rda 
+# from Carmona and Nicholls (2020).
+load(file = file.choose())
+```
+
+```{r hpv_eta_smi_elpd_pois}
+
+hpv_eta_smi_pois_waic.df = 
+  hpv_smi_model_eval[hpv_smi_model_eval$module=="poisson" & 
+                     hpv_smi_model_eval$score_id == "elpd_waic", ]
+
+hpv_eta_smi_pois_waic_extra.df = 
+  data.frame(score_id = rep("elpd_waic", 9),
+             module = rep("poisson", 9),
+             score = hpv_eta_smi_waic_pois[, 'elpd_waic'],
+             eta_pois = as.numeric(add_eta_pois))
+
+hpv_eta_smi_pois_waic_all.df = 
+  rbind(hpv_eta_smi_pois_waic_extra.df, hpv_eta_smi_pois_waic.df)
+
+hpv_eta_smi_pois_waic_all.df = 
+  hpv_eta_smi_pois_waic_all.df[order(hpv_eta_smi_pois_waic_all.df$eta_pois), ]
+rownames(hpv_eta_smi_pois_waic_all.df) = NULL
+
+
+names(hpv_eta_smi_pois_waic_all.df)[names(hpv_eta_smi_pois_waic_all.df)=="score"] = "elpd_waic"
+```
+
+
+```{r hpv_eta_smi_elpd_binom}
+hpv_eta_smi_binom_waic.df = 
+  hpv_smi_model_eval[hpv_smi_model_eval$module=="binomial" & 
+                       hpv_smi_model_eval$score_id == "elpd_waic", ]
+
+
+hpv_eta_smi_binom_waic_extra.df = 
+  data.frame(score_id = rep("elpd_waic", 9),
+             module = rep("binomial", 9),
+             score = hpv_eta_smi_waic_binom[, 'elpd_waic'],
+             eta_pois = as.numeric(add_eta_pois))
+
+
+hpv_eta_smi_binom_waic_all.df = 
+  rbind(hpv_eta_smi_binom_waic_extra.df, hpv_eta_smi_binom_waic.df)
+
+hpv_eta_smi_binom_waic_all.df = 
+  hpv_eta_smi_binom_waic_all.df[order(hpv_eta_smi_binom_waic_all.df$eta_pois),]
+rownames(hpv_eta_smi_binom_waic_all.df) = NULL
+
+names(hpv_eta_smi_binom_waic_all.df)[names(hpv_eta_smi_binom_waic_all.df)=="score"] = "elpd_waic"
+```
+
+
+```{r}
+# Save elpd results from delta-smi to hpv_abc_smi_elpd.RData
+# in the working directory.
+save(hpv_eta_smi_pois_waic_all.df,
+     hpv_eta_smi_binom_waic_all.df,
+     file = "hpv_eta_smi_elpd.RData")
+```
