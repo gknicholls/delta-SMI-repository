@@ -1,18 +1,25 @@
+#Here is the code to produce figure 4 in section 5.2 of the paper
+#"Valid belief updates for prequentially additive loss functions arising in Semi-Modular Inference"
+#Geoff K. Nicholls, Jeong Eun Lee, Chieh-Hsi Wu and Chris U. Carmona
+#(2022)
+#
 ###################################################################
-setwd("~/collab - Kate/SMI-ABC")
+setwd("~/collab - Kate/delta-SMI-repository")
 
 rm(list=ls())
-set.seed(0) # all the three's for nice example - a bit too nice maybe
-#16
+set.seed(0) 
 
+#true generative model for Y
 yim <- function(phi,theta,x,s,n,k=2){
   return(rnorm(n,theta*x^k+phi,s))
 }
 
+#ture generative model for Z
 zim <- function(phi,s,n){
   return(rnorm(n,phi,s))
 }
 
+#simulate values for the covariates in the regression
 xim <- function(n, centre, spread) {
   #return(rnorm(n,mean = centre, sd=spread))
   return(runif(n,min=centre-spread,max=centre+spread))
@@ -22,26 +29,31 @@ xim <- function(n, centre, spread) {
 
 #priors for theta and phi are ~1 improper
 
-#observation model setup and data
-n=50; m=n/2; sy=0.25; sz=1; X.centre=1; X.spread=1#
+#observation model setup and data - covariate values are U(0,2)
+n=50; m=n; sy=0.25; sz=3; X.centre=1; X.spread=1#
 phi_T=0; theta_T=1; 
-#X.centre=2/3; X.spread=2/3 #these are nice values for illustration because the cut limit is exactly correct
 
-#the number of K-values and the list of K-values we consider
-K.len=10; 
+#the number of K-values and the list of K-values we consider - this is
+#the power of the covariate X in the true generative model - the fitted model
+#takes k=1 so linear regression
+K.len=11; 
 K=seq(from=1,to=2,length.out=K.len)
 
-#the number of reps per k-val
+#the number of reps per k-val - the number of samples in each bar in the boxplot
+#each rep is an independent data set and a complete refit of Bayes/Cut/delta-SMI
 N.trials=100
 
-#for each k,trial pair we get the MSE and store it - we stor cut and bayes as well
+#for each k,trial pair we get the MSE and ELPD_z values and store them 
 MSE.phi=MSE.theta=MSE.phi.B=MSE.theta.B=MSE.phi.C=MSE.theta.C=delta.opt.loocv=delta.opt.exact=matrix(NA,K.len,N.trials,dimnames = list(K))
+ELPDz.excact.chosen=ELPDz.excact.Bayes=ELPDz.excact.Cut=matrix(NA,K.len,N.trials,dimnames = list(K))
+  
+T.sim=1e3 #the number of samples of each posterior used for example in estimating the posterior mean square errors used to form fig 4 top
+v.gam <- 5^seq(from=-2,to=1,length.out=100); #these are the delta values considered - when we find delta^* we chose the one with the largest ELPD_z
+n.gam=length(v.gam) #in this setting v.gam[1] should be a decent approx to Bayes and v.gam[n.gam] should give cut (to a decent approx)
 
-T.sim=1e3
-v.gam <- 5^seq(from=-2,to=1,length.out=100); #my delta is sqrt(gamma) from Kate's 
-n.gam=length(v.gam)
-
-#trial=1; k.ind=1
+#LOOCV or exact ELPD - choose delta-star using LOOCV (feasible in real applications) or compute exact ELPD. Paper uses
+#LOOCV to estimate delta and then evaluates success by seeing how well we did on exact elpd (bottom graph fig 4)
+USE.LOOCV=TRUE
 
 for(trial in 1:N.trials){
   for (k.ind in 1:K.len) {
@@ -52,10 +64,12 @@ for(trial in 1:N.trials){
     
     ELPDz=rep(0,n.gam)
     
+    #we have the exact posteriors which are normal
     mx=mean(xobs); mxy=mean(xobs*yobs); mxx=mean(xobs^2)
     my=mean(yobs)
     
     rho=(sy^2+v.gam^2)*(m-1)/(sz^2*n)
+    #LOOCV on the entries in Z
     for (ii in 1:m) {
       mz=mean(zobs[-ii])
       s.phi=sqrt(rho*sz^2/(m-1))/sqrt(rho+1-mx^2/mxx)
@@ -68,7 +82,7 @@ for(trial in 1:N.trials){
     delta.star.loocv=v.gam[which.delta.loocv]
     delta.opt.loocv[k.ind,trial]=delta.star.loocv
     
-    #now delta is chosen sample post
+    #OK LOOCV is done so get mean of all data
     mz=mean(zobs)
     
     rho=(sy^2+v.gam^2)*m/(sz^2*n)
@@ -81,13 +95,18 @@ for(trial in 1:N.trials){
     which.delta.exact=which.max(ELPDz.exact) #if we choose delta based on ELPDz
     delta.star.exact=v.gam[which.delta.exact]
     delta.opt.exact[k.ind,trial]=delta.star.exact
+    ELPDz.excact.chosen[k.ind,trial]=ELPDz.exact[which.delta.exact]
+    ELPDz.excact.Bayes[k.ind,trial]=ELPDz.exact[1]
+    ELPDz.excact.Cut[k.ind,trial]=ELPDz.exact[n.gam]
     
-    #SMI sim at delta.star.loocv
-    PHI=rnorm(T.sim,mean=mu.phi[which.delta.loocv],sd=s.phi[which.delta.loocv]) #we need sampled phi's to sample theta - could calculate theta marginal
+    which.delta.use=ifelse(USE.LOOCV,which.delta.loocv,which.delta.exact)
+    
+    #SMI simulation using nested monte carlo at delta.star.loocv
+    PHI=rnorm(T.sim,mean=mu.phi[which.delta.use],sd=s.phi[which.delta.use]) #we need sampled phi's to sample theta - could calculate theta marginal
     mu.thGphY=(mxy-PHI*mx)/mxx
     THETA=rnorm(T.sim,mean=mu.thGphY,sd=s.thGphY)
     
-    #just trusting the limits when delta~0 and delta~inf
+    #just trusting the limits v.gam[1] and v.gam[n.gam] when delta~0 and delta~inf
     PHI.BAYES=rnorm(T.sim,mean=mu.phi[1],sd=s.phi[1])
     mu.thGphY=(mxy-PHI.BAYES*mx)/mxx
     THETA.BAYES=rnorm(T.sim,mean=mu.thGphY,sd=s.thGphY)
@@ -109,15 +128,27 @@ for(trial in 1:N.trials){
   print(trial)
 }
 
-pdf(file="PMSE-regression-example.pdf")
-boxplot(t(MSE.phi),boxwex=0.15,ylim=c(0,0.7),names=as.character(round(K,1)),
-        xlab="covariate X power k",ylab="posterior mean squared error (phi)")
-boxplot(t(MSE.phi.B),boxwex=0.15,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len-0.2)
-boxplot(t(MSE.phi.C),boxwex=0.15,add=TRUE,names=NULL,col=3,outcol=3,pch=3,axes=FALSE,at=1:K.len+0.2)
+#Fig 4 top
+#pdf(file="PMSE-LOOCV-regression-example.pdf",width=6,height=5)
+boxplot(t(MSE.phi),boxwex=0.15,border = par("bg"),ylim=c(0,0.6),col=1,outcol=0,names=as.character(round(K,1)),
+        xlab="covariate power k",ylab="posterior mean squared error (phi)")
+boxplot(t(MSE.phi.B),boxwex=0.15,border = par("bg"),add=TRUE,names=NULL,col=2,outcol=0,pch=2,axes=FALSE,at=1:K.len-0.2)
+boxplot(t(MSE.phi.C),boxwex=0.15,border = par("bg"),add=TRUE,names=NULL,col=3,outcol=0,pch=3,axes=FALSE,at=1:K.len+0.2)
 legend("topleft", legend = c("Bayes","delta-SMI","Cut") , 
-       col = c(2,1,3) , bty = "n", pch=c(2,1,3))
-dev.off()
+       col = c(2,1,3) , bty = "n", lwd=c(3,3,3))
+#dev.off()
 
+#Fig 4 bottom
+#pdf(file="ELPD-EXACT-regression-example.pdf",width=6,height=5)
+boxplot(t(ELPDz.excact.chosen),boxwex=0.15,border = par("bg"),col=1,outcol=0,names=as.character(round(K,1)),
+        xlab="covariate power k",ylab="ELPD_z")
+boxplot(t(ELPDz.excact.Bayes),boxwex=0.15,border = par("bg"),add=TRUE,names=NULL,col=2,outcol=0,pch=2,axes=FALSE,at=1:K.len-0.2)
+boxplot(t(ELPDz.excact.Cut),boxwex=0.15,border = par("bg"),add=TRUE,names=NULL,col=3,outcol=0,pch=3,axes=FALSE,at=1:K.len+0.2)
+legend("bottomleft", legend = c("Bayes","delta-SMI","Cut") , 
+       col = c(2,1,3) , bty = "n", lwd=c(3,3,3))
+#dev.off()
+
+#Like fig 4 top but for theta - less interesting than phi as the Y-module is misspecified so not in paper
 boxplot(t(MSE.theta),boxwex=0.15,ylim=c(0,1),names=as.character(round(K,1)),
         xlab="covariate power k",ylab="posterior mean squared error (theta)")
 boxplot(t(MSE.theta.B),boxwex=0.15,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len-0.2)
@@ -125,12 +156,12 @@ boxplot(t(MSE.theta.C),boxwex=0.15,add=TRUE,names=NULL,col=3,outcol=3,pch=3,axes
 legend("topleft", legend = c("Bayes","SMI at delta*","Cut") , 
        col = c(2,1,3) , bty = "n", pch=c(2,1,3))
 
+#compare the LOOCV estimates of delta* with exact delta-star (well, pretty accurate) - pretty rough
 boxplot(t(delta.opt.loocv),boxwex=0.2,pch=1,names=as.character(round(K,1)),main="Delta-opt values - LOOCV and Exact",
         xlab="covariate power k",ylab="optimal delta")
 boxplot(t(delta.opt.exact),boxwex=0.2,add=TRUE,names=NULL,col=2,outcol=2,pch=2,axes=FALSE,at=1:K.len+0.3)
 legend("topleft", legend = c("LOOCV","Exact") , 
        col = c(1,2) , bty = "n", pch=c(1,2))
-#plot(delta.opt.exact,delta.opt.loocv,xlim=c(0,10))
+#dev.off()
 
-
-
+ 
