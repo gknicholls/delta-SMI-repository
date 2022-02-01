@@ -3,7 +3,7 @@
 This repository contains the code reproducing the examples in
 
 "Valid belief updates for prequentially additive loss functions arising in Semi-Modular Inference"  
-Geoff K. Nicholls, Jeong Eun Lee, Chieh-Hsi Wu and Chris U. Carmona (2022)
+Geoff K. Nicholls, Jeong Eun Lee, Chieh-Hsi Wu and Chris U. Carmona (2022)  
 http://arxiv.org/abs/2201.09706  
 
 myne.R is the biased normal example.
