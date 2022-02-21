@@ -60,4 +60,4 @@ Note: input files for generating the figures are already available in the hpv Gi
 
 **Corrections**
 
-The likelihood calculation has been corrected in `abc-smi_hpv_model_whole.stan` and `abc-smi_hpv_model_whole_delta_scaled.stan` files.
+The likelihood calculation has been corrected in `abc-smi_hpv_model_whole.stan` and `abc-smi_hpv_model_whole_delta_scaled.stan` files. (22/Oct/2022)
