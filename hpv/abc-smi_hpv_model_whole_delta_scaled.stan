@@ -37,11 +37,11 @@ model {
     logUprCDF = poisson_lcdf( nbrUpr | mu[i] );
     
     if(nbrLwr < 1){
-      target += logUprCDF/( delta[i]*2 + 1 );
+      target += (logUprCDF - log( delta[i]*2 + 1 ));
     }else{
       real logLwrCDF = poisson_lcdf( nbrLwr | mu[i] );
       real logCdfDiff = log(exp(logUprCDF - logLwrCDF) - 1) + logLwrCDF;
-      target += logCdfDiff/( delta[i]*2 + 1 );
+      target += (logCdfDiff - log( delta[i]*2 + 1 ));
     }
     
     target += binomial_lpmf( nhpv[i] | Npart[i], phi[i] );
