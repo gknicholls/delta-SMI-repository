@@ -2,7 +2,9 @@
 
 To run a delta-SMI analysis on the HPV dataset, the command at the command line is
 
+```
 Rscript hpv_abc_smi_delta_gen.R [path to inputFile]
+```
 
 The template for the input file of hpv_abc_smi_delta_gen.R is abc-smi_hpv_delta_gen_input_template.txt.
 
@@ -12,7 +14,9 @@ The template for the input file of hpv_abc_smi_delta_gen.R is abc-smi_hpv_delta_
 
 To run a delta-SMI analysis with delta scaled by the square root of y, the command at the command line is
 
+```
 Rscript hpv_abc_smi_delta_scaled_gen.R [path to inputFile]
+```
 
 The template for the input file of hpv_abc_smi_delta_scaled_gen.R is abc-smi_hpv_model_whole_delta_scaled_input_template.txt.
 
@@ -22,7 +26,9 @@ The template for the input file of hpv_abc_smi_delta_scaled_gen.R is abc-smi_hpv
 
 To run a eta-SMI analysis on the HPV dataset, the command is
 
+```
 Rscript hpv_eta_smi.R [path to inputFile]
+```
 
 The template for the input file of hpv_eta_smi.R is hpv_eta_smi_input_template.txt.
 
