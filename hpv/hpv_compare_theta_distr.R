@@ -1,10 +1,10 @@
 # Load input files
 ## hpv_eta_smi_0.040.rda
 load(file = file.choose())
-hpv_eta_smi_0.04.df  = hpv_mcmc_smi
-## load hpv_abc-smi_delta_16.RData
+hpv_eta_smi_0.05.df  = hpv_mcmc_smi
+## load hpv_abc-smi_delta_128.RData
 load(file = file.choose())
-hpv_abc_smi_16.df = hpv_abc_smi_output.df
+hpv_abc_smi_128.df = hpv_abc_smi_output.df
 ## load hpv_abc-smi_delta_scaled_1.RData
 load(file = file.choose())
 hpv_abc_smi_ds_1.df = hpv_abc_smi_output.df
@@ -17,9 +17,9 @@ load(file = file.choose())
 library(MASS)
 
 # Create contours for the bivariate theta posterior distribution from delta-SMI.
-hpv_abc_smi_delta_16_contour_z = 
-  kde2d(x = hpv_abc_smi_16.df$theta1, 
-        y = hpv_abc_smi_16.df$theta2, n = 50)
+hpv_abc_smi_delta_128_contour_z = 
+  kde2d(x = hpv_abc_smi_128.df$theta1, 
+        y = hpv_abc_smi_128.df$theta2, n = 50)
 
 # Create contours for the bivariate theta posterior distribution 
 # from delta-SMI with delta scaled by sqrt(y).
@@ -51,8 +51,8 @@ points(hpv_cut_param[c(1:7200)*5, 'theta_1'],
        cex = 0.1, col = "#FAD77D")
 
 # Contour of the bivariate posterior theta distribution of 
-# delta-SMI analysis with delta (= 16) on the Poisson module.
-contour(hpv_abc_smi_delta_16_contour_z, 
+# delta-SMI analysis with delta (= 128) on the Poisson module.
+contour(hpv_abc_smi_delta_128_contour_z, 
         drawlabels=FALSE, nlevels=7, col= "#985775", add=TRUE)
 
 # Contour of the bivariate posterior theta distribution of 
@@ -64,7 +64,7 @@ contour(hpv_eta_smi_0.04_contour_z, lty = "dashed",
 legend("topright", 
        c("Bayes", 
          expression(italic("\u03B4")*"-SMI"), 
-         expression("("*italic("\u03B4")~"= 16)"),  
+         expression("("*italic("\u03B4")~"= 128)"),  
          expression(italic("\u03B7")*"-SMI"), 
          expression("("*italic("\u03B7")~"= 0.04)"), 
          "Cut"), 

@@ -233,7 +233,7 @@ save(hpv_cut_waic_pois,
 ```{r abc_smi_load}
 # Loading all the output files from delta-SMI analyses.
 # (Assuming there are all in the working directory).
-outputFiles = paste("hpv_abc-smi_delta_", 2^c(0:10), ".RData", sep="")
+outputFiles = paste("hpv_abc-smi_delta_", round(2^c(0:8, 8.2, 8.4, 8.6, 8.8, 9, 10)), ".RData", sep="")
 
 # Store all the posterior distributions of theta and phi into a list.
 hpv_abc_smi_list = list()
@@ -261,7 +261,7 @@ for(i in 1:length(hpv_abc_smi_list)){
 }
 
 names(hpv_abc_smi_loglik_list) = 
-  paste("hpv_abc-smi_delta", 2^c(0:10), sep = "_")
+  paste("hpv_abc-smi_delta", round(2^c(0:8, 8.2, 8.4, 8.6, 8.8, 9, 10)), sep = "_")
 ```
 
 
