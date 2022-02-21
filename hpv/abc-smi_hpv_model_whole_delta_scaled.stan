@@ -41,7 +41,7 @@ model {
     }else{
       real logLwrCDF = poisson_lcdf( nbrLwr | mu[i] );
       real logCdfDiff = log(exp(logUprCDF - logLwrCDF) - 1) + logLwrCDF;
-      target += (logCdfDiff - log( delta[i]*2 + 1 ));
+      target += (logCdfDiff - log( delta[i]*2 + 1 )); // Corrected 21 Feb 2022
     }
     
     target += binomial_lpmf( nhpv[i] | Npart[i], phi[i] );
