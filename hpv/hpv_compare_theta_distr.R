@@ -1,7 +1,7 @@
 # Load input files
-## hpv_eta_smi_0.040.rda
+## hpv_eta_smi_0.050.rda
 load(file = file.choose())
-hpv_eta_smi_0.05.df  = hpv_mcmc_smi
+hpv_eta_smi_0.05.df  = hpv_smi_mcmc_all[hpv_smi_mcmc_all$eta == 0.05,]
 ## load hpv_abc-smi_delta_128.RData
 load(file = file.choose())
 hpv_abc_smi_128.df = hpv_abc_smi_output.df
@@ -28,9 +28,9 @@ hpv_abc_smi_ds_1_contour_z =
         y = hpv_abc_smi_ds_1.df$theta2, n = 50)
 
 # Create contours for the bivariate theta posterior distribution from eta-SMI 
-hpv_eta_smi_0.04_contour_z = 
-  kde2d(x = hpv_eta_smi_0.04.df$theta1, 
-        y = hpv_eta_smi_0.04.df$theta2, n = 50)
+hpv_eta_smi_0.05_contour_z = 
+  kde2d(x = hpv_eta_smi_0.05.df$theta1, 
+        y = hpv_eta_smi_0.05.df$theta2, n = 50)
 
 # Save the plot to working directory
 cairo_pdf(file = "hpv_compare_theta_distr_unscaled.pdf", height = 4.5, width = 5)
@@ -56,8 +56,8 @@ contour(hpv_abc_smi_delta_128_contour_z,
         drawlabels=FALSE, nlevels=7, col= "#985775", add=TRUE)
 
 # Contour of the bivariate posterior theta distribution of 
-# eta-SMI analysis with eta (= 0.04) on the Poisson module.
-contour(hpv_eta_smi_0.04_contour_z, lty = "dashed",
+# eta-SMI analysis with eta (= 0.05) on the Poisson module.
+contour(hpv_eta_smi_0.05_contour_z, lty = "dashed",
         drawlabels=FALSE, nlevels=7, col= "#985775", add=TRUE)
 
 # Plot legend
@@ -66,7 +66,7 @@ legend("topright",
          expression(italic("\u03B4")*"-SMI"), 
          expression("("*italic("\u03B4")~"= 128)"),  
          expression(italic("\u03B7")*"-SMI"), 
-         expression("("*italic("\u03B7")~"= 0.04)"), 
+         expression("("*italic("\u03B7")~"= 0.05)"), 
          "Cut"), 
        bty="n", 
        col=c("#243757", "#985775", NA, "#985775", NA,  "#FAD77D"),
@@ -100,13 +100,13 @@ contour(hpv_abc_smi_ds_1_contour_z,
         drawlabels=FALSE, nlevels = 7, col= "#985775", add=TRUE)
 
 # Contour of the bivariate posterior theta distribution of 
-# eta-SMI analysis with eta (= 0.04) on the Poisson module.
-contour(hpv_eta_smi_0.04_contour_z, lty = "dashed",
+# eta-SMI analysis with eta (= 0.05) on the Poisson module.
+contour(hpv_eta_smi_0.05_contour_z, lty = "dashed",
         drawlabels=FALSE, nlevels = 7, col= "#985775", add=TRUE)
 
 # Plot legend
 legend("topright", c("Bayes", expression(italic("\u03B4")*"-SMI"), expression("("*italic("\u03B4")~"= 1)"),  
-                     expression(italic("\u03B7")*"-SMI"), expression("("*italic("\u03B7")~"= 0.04)"), "Cut"), 
+                     expression(italic("\u03B7")*"-SMI"), expression("("*italic("\u03B7")~"= 0.05)"), "Cut"), 
        bty="n", 
        col=c("#243757", "#985775", NA, "#985775",  NA, "#FAD77D"),
        lty = c(NA, "solid", NA, "dashed",  NA, NA),
