@@ -1,5 +1,5 @@
 # Load input files
-## hpv_eta_smi_0.050.rda
+## Load the hpv_smi_mcmc_all.rda from Carmona and Nicholls (2021)
 load(file = file.choose())
 hpv_eta_smi_0.05.df  = hpv_smi_mcmc_all[hpv_smi_mcmc_all$eta == 0.05,]
 ## load hpv_abc-smi_delta_128.RData
